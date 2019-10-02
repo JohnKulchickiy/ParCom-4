@@ -1,13 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace lab_4
@@ -21,20 +13,14 @@ namespace lab_4
 
         private void btn_FreeThread_Click(object sender, EventArgs e)
         {
-            Double[] counters = new Double[5];
+            PriorityTesting[] inst = new PriorityTesting[5]
+                { new PriorityTesting(), new PriorityTesting(), new PriorityTesting(), new PriorityTesting(), new PriorityTesting() };
             Thread[] threads = new Thread[5];
+            Int32 thrID = Thread.CurrentThread.ManagedThreadId;
 
             for (int n = 0; n < 5; n++)
             {
-                threads[n] = new Thread(() =>
-                {
-                    Int32 thrID = Thread.CurrentThread.ManagedThreadId;
-
-                    PriorityTesting inst = new PriorityTesting();
-                    //counters[n] = inst.counter;
-
-                    inst.ThreadMethod(thrID);
-                });
+                threads[n] = new Thread(new ParameterizedThreadStart(inst[n].ThreadMethod));
             }
 
             threads[0].Priority = ThreadPriority.Lowest;
@@ -45,16 +31,18 @@ namespace lab_4
 
             for (int i = 0; i < 5; i++)
             {
-                threads[i].Start();
+                threads[i].Start(thrID);
             }
 
             Thread.Sleep(10000);
 
             for (int i = 0; i < 5; i++)
             {
-                txt_debug.Text += $"ID потока: {threads[i].ManagedThreadId}\tПриоритет потока: {threads[i].Priority}\t\tЗначение счётчика: {counters[i]}\r\n";
+                txt_debug.Text += $"ID потока: {threads[i].ManagedThreadId}\tЗначение счётчика: {inst[i].counter}\tПриоритет потока: {threads[i].Priority}\r\n";
                 threads[i].Abort();
             }
+
+            txt_debug.Text += "______________________________________________________________________\r\n";
         }
     }
 }
